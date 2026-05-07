@@ -18,13 +18,20 @@ app.add_middleware(
 vertexai.init(project=os.getenv("GCP_PROJECT_ID"), location=os.getenv("GCP_LOCATION"))
 
 # 2. Define our Gemini Models
-embed_model = VertexAIEmbeddings(model_name="gemini-embeddings-1")
-llm = VertexAI(model_name="gemini-3.1-flash-lite-preview", temperature=0.2)
+embed_model = VertexAIEmbeddings(model_name="gemini-embedding-001")
+llm = VertexAI(model_name="gemini-2.5-flash-lite", temperature=0.2)
 DB_URL = os.getenv("DB_URL")
+
+@app.get("/")
+def root():
+    return {"status": "AI API running"}
 
 @app.get("/ai/troubleshoot")
 async def troubleshoot(question: str, product_code: str):
     try:
+        if not question or not product_code:
+            raise HTTPException(status_code=400, detail="Missing question or product_code")
+        
         # Step A: Convert the user's question into a mathematical vector
         query_vector = embed_model.embed_query(question)
         
@@ -46,7 +53,7 @@ async def troubleshoot(question: str, product_code: str):
         # Combine the retrieved text
         context = "\n".join([row[0] for row in results]) if results else "No manual found."
 
-        # Step C: The Prompt Injection
+        # Step C: The Prompt
         prompt = f"""
         You are an expert industrial maintenance AI for YNY Technology.
         Use ONLY the following manual excerpt to answer the user's question.
@@ -63,3 +70,7 @@ async def troubleshoot(question: str, product_code: str):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -6,7 +6,7 @@ import os
 
 load_dotenv()
 vertexai.init(project=os.getenv("GCP_PROJECT_ID"), location=os.getenv("GCP_LOCATION"))
-embed_model = VertexAIEmbeddings(model_name="gemini-embeddings-1")
+embed_model = VertexAIEmbeddings(model_name="gemini-embedding-001")
 
 manual_text = """
 Maintenance Manual for PUMP-CENT-001:
