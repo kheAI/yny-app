@@ -3,17 +3,33 @@ using System.ComponentModel.DataAnnotations;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Setup CORS so our React frontend is allowed to talk to this API
 builder.Services.AddCors(options => {
-    options.AddPolicy("AllowAll", policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+    options.AddPolicy("AllowAll", policy => policy
+        .WithOrigins(
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "https://yny-ui-158766252751.us-central1.run.app"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod());
 });
 
-// Connect to PostgreSQL
 var connString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connString));
 
 var app = builder.Build();
+
+// Apply migrations automatically
+using (var scope = app.Services.CreateScope()) {
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
 app.UseCors("AllowAll");
+app.UseHttpsRedirection();
+
+// Root endpoint
+app.MapGet("/", () => new { status = "ERP API running" });
 
 // API Endpoints
 app.MapGet("/api/products", async (AppDbContext db) => {
@@ -27,7 +43,7 @@ app.MapGet("/api/products/{code}", async (string code, AppDbContext db) => {
 
 app.Run();
 
-// Data Models (Must match SQL exactly)
+// Data Models
 public class AppDbContext : DbContext {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
     public DbSet<Product> Products { get; set; }
