@@ -5,3 +5,4 @@ obj/
 venv/
 .env
 appsettings.json
+.DS_Store
