@@ -8,11 +8,11 @@ function App() {
   const [loading, setLoading] = useState(false)
 
   // NOTE: Update these URLs once deployed to Google Cloud Run!
-  const ERP_API = 'http://localhost:5000/api'
-  const AI_API = 'http://localhost:8000/ai'
+  const ERP_API = 'https://erp-api-158766252751.us-central1.run.app'
+  const AI_API = 'https://ai-api-158766252751.us-central1.run.app'
 
   useEffect(() => {
-    axios.get(`${ERP_API}/products`)
+    axios.get(`${ERP_API}/api/products`)
          .then(res => setProducts(res.data))
          .catch(err => console.error("ERP API not running", err))
   }, [])
