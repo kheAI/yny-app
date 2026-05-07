@@ -4,5 +4,6 @@ bin/
 obj/
 venv/
 .env
+.env.production
 appsettings.json
 .DS_Store

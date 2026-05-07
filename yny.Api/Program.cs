@@ -8,6 +8,7 @@ builder.Services.AddCors(options => {
         .WithOrigins(
             "http://localhost:5173",
             "http://localhost:3000",
+            "https://yny-ui.vercel.app",
             "https://yny-ui-158766252751.us-central1.run.app"
         )
         .AllowAnyHeader()

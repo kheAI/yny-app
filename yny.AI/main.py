@@ -26,7 +26,7 @@ DB_URL = os.getenv("DB_URL")
 def root():
     return {"status": "AI API running"}
 
-@app.get("/ai/troubleshoot")
+@app.get("/troubleshoot")
 async def troubleshoot(question: str, product_code: str):
     try:
         if not question or not product_code:
