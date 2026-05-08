@@ -14,5 +14,5 @@ COPY . .
 
 EXPOSE 8080
 
-# Start Cloud SQL Proxy and the FastAPI app on port 8080
-CMD ["sh", "-c", "./cloud_sql_proxy -instances=sensq-162608:us-central1:free-trial-first-project=tcp:5432 & python -m uvicorn main:app --host 0.0.0.0 --port 8080"]
+# Start Cloud SQL Proxy in background, then start FastAPI
+CMD ["sh", "-c", "./cloud_sql_proxy -instances=sensq-162608:us-central1:free-trial-first-project=tcp:5432 & sleep 2 && python -m uvicorn main:app --host 0.0.0.0 --port 8080"]

@@ -1,10 +1,11 @@
-from langchain_google_vertexai import VertexAIEmbeddings
 from dotenv import load_dotenv
+from langchain_google_vertexai import VertexAIEmbeddings
 import psycopg2
 import vertexai
 import os
 
 load_dotenv()
+
 vertexai.init(project=os.getenv("GCP_PROJECT_ID"), location=os.getenv("GCP_LOCATION"))
 embed_model = VertexAIEmbeddings(model_name="text-embedding-004")
 
@@ -16,7 +17,7 @@ Diagnosis: Pump is experiencing cavitation due to low Net Positive Suction Head 
 Action: Immediately throttle the discharge valve to reduce flow rate, or increase suction tank level. Check housing bolts and torque to 45 Nm.
 """
 
-print("Embedding text via Gemini...")
+print("Embedding text via Vertex AI...")
 vector = embed_model.embed_query(manual_text)
 
 print("Saving to PostgreSQL...")

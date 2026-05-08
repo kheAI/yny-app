@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from langchain_google_vertexai import VertexAIEmbeddings, VertexAI
 from dotenv import load_dotenv
+import google.generativeai as genai
+from langchain_google_vertexai import VertexAIEmbeddings
 import psycopg2
 import vertexai
 import os
@@ -14,12 +15,13 @@ app.add_middleware(
     CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
 )
 
-# 1. Initialize Google AI
+# Initialize APIs
 vertexai.init(project=os.getenv("GCP_PROJECT_ID"), location=os.getenv("GCP_LOCATION"))
-
-# 2. Define our Gemini Models
 embed_model = VertexAIEmbeddings(model_name="text-embedding-004")
-llm = VertexAI(model_name="gemini-2.5-flash-lite", temperature=0.2)
+
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+llm = genai.GenerativeModel("gemini-3.1-flash-lite-preview")
+
 DB_URL = os.getenv("DB_URL")
 
 @app.get("/")
@@ -32,14 +34,13 @@ async def troubleshoot(question: str, product_code: str):
         if not question or not product_code:
             raise HTTPException(status_code=400, detail="Missing question or product_code")
         
-        # Step A: Convert the user's question into a mathematical vector
+        # Step A: Convert question to vector using Vertex AI Embeddings
         query_vector = embed_model.embed_query(question)
         
-        # Step B: Search Postgres using pgvector (Cosine Distance <=>)
+        # Step B: Search Postgres using pgvector
         conn = psycopg2.connect(DB_URL)
         cur = conn.cursor()
         
-        # Find the top 3 most relevant manual chunks
         query = """
             SELECT text_chunk FROM manual_knowledge 
             WHERE product_code = %s 
@@ -50,10 +51,9 @@ async def troubleshoot(question: str, product_code: str):
         cur.close()
         conn.close()
 
-        # Combine the retrieved text
         context = "\n".join([row[0] for row in results]) if results else "No manual found."
 
-        # Step C: The Prompt
+        # Step C: Generate answer with Gemini API (free tier)
         prompt = f"""
         You are an expert industrial maintenance AI for YNY Technology.
         Use ONLY the following manual excerpt to answer the user's question.
@@ -64,9 +64,8 @@ async def troubleshoot(question: str, product_code: str):
         Provide a concise, safe, and professional engineering resolution.
         """
         
-        # Step D: Generate the Answer
-        response = llm.invoke(prompt)
-        return {"answer": response}
+        response = llm.generate_content(prompt)
+        return {"answer": response.text}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

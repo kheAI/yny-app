@@ -3,3 +3,4 @@ uvicorn
 psycopg2-binary
 langchain-google-vertexai
 python-dotenv
+google-generativeai
