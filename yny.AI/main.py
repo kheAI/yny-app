@@ -18,7 +18,7 @@ app.add_middleware(
 vertexai.init(project=os.getenv("GCP_PROJECT_ID"), location=os.getenv("GCP_LOCATION"))
 
 # 2. Define our Gemini Models
-embed_model = VertexAIEmbeddings(model_name="gemini-embedding-001")
+embed_model = VertexAIEmbeddings(model_name="text-embedding-004")
 llm = VertexAI(model_name="gemini-2.5-flash-lite", temperature=0.2)
 DB_URL = os.getenv("DB_URL")
 
@@ -73,4 +73,5 @@ async def troubleshoot(question: str, product_code: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", 8080))
+    uvicorn.run(app, host="0.0.0.0", port=port)
