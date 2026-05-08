@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,22 +18,15 @@ builder.Services.AddCors(options => {
 
 var connString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connString));
+//.UseLowerCaseNamingConvention());
 
 var app = builder.Build();
-
-// Apply migrations automatically
-using (var scope = app.Services.CreateScope()) {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
 
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
-// Root endpoint
 app.MapGet("/", () => new { status = "ERP API running" });
 
-// API Endpoints
 app.MapGet("/api/products", async (AppDbContext db) => {
     return await db.Products.ToListAsync();
 });
@@ -44,17 +38,26 @@ app.MapGet("/api/products/{code}", async (string code, AppDbContext db) => {
 
 app.Run();
 
-// Data Models
+[Table("products")]
+public class Product {
+    [Column("productcode")]
+    [Key]
+    public string ProductCode { get; set; } = string.Empty;
+    
+    [Column("productname")]
+    public string ProductName { get; set; } = string.Empty;
+    
+    [Column("category")]
+    public string Category { get; set; } = string.Empty;
+    
+    [Column("quantityinstock")]
+    public int QuantityInStock { get; set; }
+    
+    [Column("status")]
+    public string Status { get; set; } = string.Empty;
+}
+
 public class AppDbContext : DbContext {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
     public DbSet<Product> Products { get; set; }
-}
-
-public class Product {
-    [Key]
-    public string ProductCode { get; set; } = string.Empty;
-    public string ProductName { get; set; } = string.Empty;
-    public string Category { get; set; } = string.Empty;
-    public int QuantityInStock { get; set; }
-    public string Status { get; set; } = string.Empty;
 }
