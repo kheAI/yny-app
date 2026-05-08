@@ -1,38 +1,40 @@
-# 🏭 Y&Y App: AI-Powered Domain-Expert ERP System
+# 🏗️ Y&Y App – AI-Powered Industrial ERP 
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-black?style=for-the-badge&logo=vercel)](https://yny-ui.vercel.app/)
-[![YouTube](https://img.shields.io/badge/Video_Demo-YouTube-red?style=for-the-badge&logo=youtube)](https://www.youtube.com/watch?v=JHX0fRmJuW4)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen.svg?style=for-the-badge)](https://yny-ui.vercel.app/)
+[![YouTube](https://img.shields.io/badge/YouTube-Video_Demo-red.svg?style=for-the-badge&logo=youtube)](https://www.youtube.com/watch?v=JHX0fRmJuW4)
 
-An industrial-grade, microservices-based SaaS prototype that integrates secure ERP inventory management with a specialized AI troubleshooting agent using **Retrieval-Augmented Generation (RAG)**.
+> An industrial-grade, microservices-based SaaS that combines live ERP inventory management with a state-of-the-art **AI Domain-Expert Agent** capable of diagnosing machinery issues in real-time.
 
-## 🌟 Project Overview
+Building monolithic apps is a thing of the past. Y&Y App showcases a robust, strictly decoupled **Microservices Architecture**, separating enterprise business logic (inventory) from complex AI workflows (Retrieval-Augmented Generation), all unified under a blazing-fast React frontend.
 
-Industrial maintenance requires immediate, accurate access to complex technical manuals. **Y&Y App (yny)** bridges the gap between structured business data and unstructured technical knowledge. 
+## ✨ The Elevator Pitch
 
-Instead of a monolithic architecture, this project utilizes a strict **Microservices Architecture** to ensure data integrity, separating standard ERP logic from AI processing. 
+Don't just track your equipment—*troubleshoot it*. Y&Y App uses a **Retrieval-Augmented Generation (RAG)** pipeline powered by Google's Gemini APIs and PostgreSQL `pgvector`. When a user reports a strange noise from a pump, the AI doesn't guess; it performs a vector similarity search to retrieve the exact manufacturer maintenance manual and synthesizes a safe, factual resolution.
 
-### Key Features
+## 🚀 Key Features
 
-1. **Live ERP Dashboard:** Real-time inventory tracking powered by a lightning-fast .NET 8 backend.
-2. **AI Domain-Expert Agent:** An AI troubleshooter that converts user queries into mathematical vectors, searches through technical manuals via `pgvector`, and synthesizes professional engineering resolutions using **Gemini 2.5 Flash**.
-3. **Serverless Scale-to-Zero:** Backend services are containerized and deployed on Google Cloud Run to keep infrastructure costs minimal while allowing infinite scalability.
+*   **Microservices Architecture:** Independent scaling for UI, ERP, and AI logic.
+*   **Enterprise-Grade ERP API:** Built with **.NET 8 Minimal APIs** for extreme performance and type-safe data handling.
+*   **AI RAG Pipeline:** A **Python FastAPI** service utilizing `gemini-embedding-001` and the ultra-low latency `gemma-4-26b-a4b-it` Mixture-of-Experts (MoE) model.
+*   **Unified Vector Database:** **Google Cloud SQL (PostgreSQL)** handles standard relational data *and* 768-dimensional mathematical vector embeddings in the same place via the `pgvector` extension.
+*   **Serverless Deployment:** APIs deployed on **Google Cloud Run** (scales to zero) and frontend hosted on **Vercel**.
 
 
 
-## 🏗️ Architecture & Tech Stack
+## 🏗️ Architecture & Data Flow
 
 ```mermaid
 graph TD
-    User([User / Browser]) -->|HTTP Requests| UI[React + Vite Frontend Vercel]
+    User([User / Browser]) -->|HTTP Requests| UI[React + Vite Frontend - Vercel]
     
-    UI -->|Fetch Inventory| ERP[.NET 8 Web API Cloud Run]
-    UI -->|Troubleshoot Query| AI[Python FastAPI Cloud Run]
+    UI -->|Fetch Inventory| ERP[.NET 8 Web API - CloudRun1]
+    UI -->|Troubleshoot Query| AI[Python FastAPI - CloudRun2]
     
-    ERP -->|SQL Queries| DB[(PostgreSQL + pgvector Cloud SQL)]
+    ERP -->|SQL Queries| DB[(PostgreSQL + pgvector - Cloud SQL)]
     
-    AI -->|1. Create Vector| LLM1[Vertex AI Embeddings]
-    AI -->|2. Vector Search| DB
-    AI -->|3. RAG Prompt| LLM2[Gemini 2.5 Flash]
+    AI -->|1. Create Vector| LLM1[Gemini Embeddings 001]
+    AI -->|2. Cosine Similarity Search <= >| DB
+    AI -->|3. RAG Prompt Context| LLM2[Gemma-4-26B-A4B-IT]
     
     classDef frontend fill:#61dafb,stroke:#333,stroke-width:2px,color:black;
     classDef backend fill:#512bd4,stroke:#333,stroke-width:2px,color:white;
@@ -47,110 +49,84 @@ graph TD
     class LLM1,LLM2 ai;
 ```
 
-* **Data Tier:** Google Cloud SQL (PostgreSQL) + `pgvector` extension.
-* **Logic Tier (ERP):** .NET 8 Web API (C#) using Minimal APIs and Entity Framework Core.
-* **Logic Tier (AI):** Python + FastAPI powered by Google Vertex AI (`text-embeddings-004` & `gemini-2.5-flash`).
-* **Presentation Tier:** React + Vite.
-* **Infrastructure:** Google Cloud Run (Backend Containers), Vercel (Frontend), GitHub Actions (CI/CD).
+## 🛠️ Tech Stack
+
+| Tier            | Technology              | Why we chose it                                              |
+| :-------------- | :---------------------- | :----------------------------------------------------------- |
+| **Frontend**    | React + Vite            | Fast compilation, modern hooks-based UI, easily deployed to Vercel. |
+| **Logic (ERP)** | .NET 8 (C#)             | Industry standard for secure, highly structured, and fast enterprise business data. |
+| **Logic (AI)**  | Python + FastAPI        | The undisputed ecosystem for AI/ML integration and data processing. |
+| **Database**    | PostgreSQL + `pgvector` | Eliminates the need for a separate Vector DB by handling both standard SQL and Cosine Distance (`<=>`) vector math natively. |
+| **LLMs**        | Gemini API              | Gemma 4-26b MoE offers incredible intelligence with low inference latency, ideal for real-time agents. |
+| **Cloud**       | Google Cloud Platform   | Seamless integration via Cloud Run and Cloud SQL over secure Unix domain sockets. |
 
 
 
-## 📂 Repository Structure
+## 💻 Local Development Setup
 
-```text
-/yny-app
-  ├── /yny.Api      # .NET 8 Backend (ERP Inventory Data)
-  ├── /yny.AI       # Python FastAPI (RAG pipeline & LLM Integration)
-  └── /yny-ui       # React + Vite (Frontend Dashboard)
-```
+Want to run this monorepo locally? Follow these steps:
 
+### 1. Database Configuration
 
+Ensure you have a PostgreSQL instance running with the `pgvector` extension enabled.
 
-## 🚀 Getting Started (Local Development)
+1. Run the initial SQL script located in the tutorial to create the `Products` and `manual_knowledge` tables.
+2. Insert the seed ERP data.
 
-To run this application locally, you will need **.NET 8 SDK**, **Python 3.10+**, **Node.js**, and a **PostgreSQL** instance with the `pgvector` extension installed.
-
-### 1. Database Setup
-
-Create a PostgreSQL database and run the initial setup script:
-
-```sql
-CREATE EXTENSION IF NOT EXISTS vector;
--- (See full SQL schema in the tutorial/docs to build tables and seed ERP data)
-```
-
-### 2. Start the ERP API (.NET)
-
-Update your connection string in `yny.Api/appsettings.json`, then run:
+### 2. Run the ERP API (.NET)
 
 ```bash
 cd yny.Api
+# Update connection string in appsettings.json with your DB credentials
 dotnet restore
 dotnet run
 ```
 
-*API will run on `http://localhost:5000` (or similar).*
+*API will be live at `http://localhost:5000`*
 
-### 3. Start the AI API (Python)
-
-You need a Google Cloud Project with Vertex AI enabled. Configure your `.env` file inside `yny.AI/` with your `GCP_PROJECT_ID`, `GCP_LOCATION`, and `DB_URL`.
+### 3. Run the AI Agent (Python)
 
 ```bash
 cd yny.AI
-python -m venv venv
-source venv/bin/activate  # (Windows: venv\Scripts\activate)
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-# Seed the AI database with the manual first:
+# Create a .env file with DB_URL and GEMINI_API_KEY
+# Run the seed script to inject vector knowledge
 python seed.py
 
-# Start the server:
-uvicorn main:app --reload --port 8080
+# Start the API
+python main.py
 ```
 
-*AI service will run on `http://localhost:8080`.*
+*API will be live at `http://localhost:8080`*
 
-### 4. Start the Frontend (React)
-
-Set your `.env` variables inside `yny-ui/` to point to your local APIs:
-
-```env
-VITE_ERP_API=http://localhost:5000
-VITE_AI_API=http://localhost:8080
-```
-
-Then run the app:
+### 4. Run the Dashboard (React)
 
 ```bash
 cd yny-ui
 npm install
+# Ensure .env connects to your local .NET and Python ports
 npm run dev
 ```
 
-
-
-## 🧪 Demo Workflow
-
-To verify the system's end-to-end functionality once running:
-
-1. Open the **React Dashboard** to view the live inventory populating from the .NET backend.
-2. Note the target equipment: `PUMP-CENT-001`.
-3. Input a specialized query into the AI module: *"Why is the pump making a crackling noise like gravel?"*
-4. Click **Consult AI**. The Python service will vectorize the query, perform a Cosine Distance search on the `pgvector` database, retrieve the seeded manual, and synthesize a resolution using Gemini.
+*App will be live at `http://localhost:5173`*
 
 
 
-## ☁️ Deployment
+## 🌐 Cloud Deployment
 
-This project is built to be deployed using **Docker containers** and **Serverless** technologies.
+This application is fully containerized with `Docker` and designed for serverless architectures:
 
-* **Backend:** Contains `Dockerfile`s in both API directories, designed for zero-config deployment to **Google Cloud Run**.
-* **Frontend:** Optimized for one-click deployment via **Vercel**.
-* **CI/CD:** Check the `.github/workflows` folder (if implemented) for automated deployment pipelines using GitHub Actions.
+- **Backend Services:** Deployed via **Google Cloud Run**, utilizing secure Unix Domain Sockets for database connections without exposing TCP ports. Auto-deploys via GitHub Actions CI/CD.
+- **Frontend UI:** Auto-deployed globally via **Vercel**.
 
+## 🤝 Contributing
 
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](../../issues).
 
-## 📄 License
+## 📝 License
 
-This project is licensed under the MIT License.
+This project is [MIT](https://choosealicense.com/licenses/mit/) licensed.
 
