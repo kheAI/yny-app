@@ -6,7 +6,7 @@ import os
 
 load_dotenv()
 vertexai.init(project=os.getenv("GCP_PROJECT_ID"), location=os.getenv("GCP_LOCATION"))
-embed_model = VertexAIEmbeddings(model_name="gemini-embedding-001")
+embed_model = VertexAIEmbeddings(model_name="text-embedding-004")
 
 manual_text = """
 Maintenance Manual for PUMP-CENT-001:
@@ -28,3 +28,5 @@ cur.execute(
 )
 conn.commit()
 print("Vector Seeded Successfully!")
+cur.close()
+conn.close()
