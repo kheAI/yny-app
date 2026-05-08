@@ -2,9 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import google.generativeai as genai
-from langchain_google_vertexai import VertexAIEmbeddings
 import psycopg2
-import vertexai
 import os
 
 load_dotenv()
@@ -15,12 +13,9 @@ app.add_middleware(
     CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
 )
 
-# Initialize APIs
-vertexai.init(project=os.getenv("GCP_PROJECT_ID"), location=os.getenv("GCP_LOCATION"))
-embed_model = VertexAIEmbeddings(model_name="text-embedding-004")
-
+# Initialize Gemini API
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-llm = genai.GenerativeModel("gemini-3.1-flash-lite-preview")
+llm = genai.GenerativeModel("gemma-4-26b-a4b-it")
 
 DB_URL = os.getenv("DB_URL")
 
@@ -34,8 +29,13 @@ async def troubleshoot(question: str, product_code: str):
         if not question or not product_code:
             raise HTTPException(status_code=400, detail="Missing question or product_code")
         
-        # Step A: Convert question to vector using Vertex AI Embeddings
-        query_vector = embed_model.embed_query(question)
+        # Step A: Convert question to vector using Gemini Embedding 1
+        embedding_result = genai.embed_content(
+            model="gemini-embedding-001",
+            content=question,
+            output_dimensionality=768  # Set to 768 dimensions
+        )
+        query_vector = embedding_result['embedding']
         
         # Step B: Search Postgres using pgvector
         conn = psycopg2.connect(DB_URL)
@@ -53,7 +53,7 @@ async def troubleshoot(question: str, product_code: str):
 
         context = "\n".join([row[0] for row in results]) if results else "No manual found."
 
-        # Step C: Generate answer with Gemini API (free tier)
+        # Step C: Generate answer with Gemini 3.1 Flash
         prompt = f"""
         You are an expert industrial maintenance AI for YNY Technology.
         Use ONLY the following manual excerpt to answer the user's question.

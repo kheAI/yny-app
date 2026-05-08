@@ -1,13 +1,11 @@
 from dotenv import load_dotenv
-from langchain_google_vertexai import VertexAIEmbeddings
+import google.generativeai as genai
 import psycopg2
-import vertexai
 import os
 
 load_dotenv()
 
-vertexai.init(project=os.getenv("GCP_PROJECT_ID"), location=os.getenv("GCP_LOCATION"))
-embed_model = VertexAIEmbeddings(model_name="text-embedding-004")
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 manual_text = """
 Maintenance Manual for PUMP-CENT-001:
@@ -17,8 +15,13 @@ Diagnosis: Pump is experiencing cavitation due to low Net Positive Suction Head 
 Action: Immediately throttle the discharge valve to reduce flow rate, or increase suction tank level. Check housing bolts and torque to 45 Nm.
 """
 
-print("Embedding text via Vertex AI...")
-vector = embed_model.embed_query(manual_text)
+print("Embedding text via Gemini Embedding 1...")
+embedding_result = genai.embed_content(
+    model="gemini-embedding-001",
+    content=manual_text,
+    output_dimensionality=768  # Set to 768 dimensions
+)
+vector = embedding_result['embedding']
 
 print("Saving to PostgreSQL...")
 conn = psycopg2.connect(os.getenv("DB_URL"))
